@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -13,6 +13,63 @@ function createWindow() {
   });
 
   mainWindow.loadFile('index.html');
+  
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Open',
+          accelerator: 'CmdOrCtrl+O',
+          click: () => {
+            mainWindow.webContents.send('open-file');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Exit',
+          accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
+          click: () => {
+            app.quit();
+          }
+        }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    }
+  ];
+
+  if (process.platform === 'darwin') {
+    template.unshift({
+      label: app.getName(),
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'services' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    });
+  }
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
 }
 
 app.whenReady().then(createWindow);

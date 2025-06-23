@@ -10,7 +10,7 @@ const fileName = document.getElementById('fileName');
 const fileSize = document.getElementById('fileSize');
 const fileType = document.getElementById('fileType');
 
-openFileBtn.addEventListener('click', async () => {
+async function openFile() {
     try {
         const result = await ipcRenderer.invoke('open-file-dialog');
         
@@ -22,7 +22,11 @@ openFileBtn.addEventListener('click', async () => {
     } catch (error) {
         alert('Error opening file: ' + error.message);
     }
-});
+}
+
+openFileBtn.addEventListener('click', openFile);
+
+ipcRenderer.on('open-file', openFile);
 
 function displayFile(fileData) {
     welcomeMessage.style.display = 'none';
