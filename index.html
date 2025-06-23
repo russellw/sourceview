@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Source File Viewer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Source File Viewer</h1>
+            <button id="openFileBtn" class="btn-primary">Open File</button>
+        </header>
+        
+        <div class="main-content">
+            <div class="file-info" id="fileInfo" style="display: none;">
+                <span id="fileName"></span>
+                <span id="fileSize"></span>
+                <span id="fileType"></span>
+            </div>
+            
+            <div class="code-container">
+                <div class="welcome-message" id="welcomeMessage">
+                    <h2>Welcome to Source File Viewer</h2>
+                    <p>Click "Open File" to view source code with syntax highlighting</p>
+                </div>
+                
+                <pre id="codeBlock" style="display: none;"><code id="codeContent"></code></pre>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>
