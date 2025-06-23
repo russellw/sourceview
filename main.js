@@ -46,7 +46,29 @@ function createWindow() {
         { role: 'zoomIn' },
         { role: 'zoomOut' },
         { type: 'separator' },
-        { role: 'togglefullscreen' }
+        { role: 'togglefullscreen' },
+        { type: 'separator' },
+        {
+          label: 'Next Tab',
+          accelerator: 'CmdOrCtrl+Tab',
+          click: () => {
+            mainWindow.webContents.send('next-tab');
+          }
+        },
+        {
+          label: 'Previous Tab',
+          accelerator: 'CmdOrCtrl+Shift+Tab',
+          click: () => {
+            mainWindow.webContents.send('prev-tab');
+          }
+        },
+        {
+          label: 'Close Tab',
+          accelerator: 'CmdOrCtrl+W',
+          click: () => {
+            mainWindow.webContents.send('close-tab');
+          }
+        }
       ]
     }
   ];

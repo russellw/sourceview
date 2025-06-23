@@ -15,19 +15,20 @@
         </header>
         
         <div class="main-content">
-            <div class="file-info" id="fileInfo" style="display: none;">
-                <span id="fileName"></span>
-                <span id="fileSize"></span>
-                <span id="fileType"></span>
+            <div class="tab-bar" id="tabBar" style="display: none;">
+                <div class="tab-list" id="tabList"></div>
             </div>
             
-            <div class="code-container">
-                <div class="welcome-message" id="welcomeMessage">
-                    <h2>Welcome to Source File Viewer</h2>
-                    <p>Click "Open File" to view source code with syntax highlighting</p>
+            <div class="tab-content-area">
+                <div class="welcome-tab" id="welcomeTab">
+                    <div class="welcome-message">
+                        <h2>Welcome to Source File Viewer</h2>
+                        <p>Click "Open File" to view source code with syntax highlighting</p>
+                        <p>Each file will open in a new tab for easy navigation</p>
+                    </div>
                 </div>
                 
-                <pre id="codeBlock" style="display: none;"><code id="codeContent"></code></pre>
+                <div class="tabs-container" id="tabsContainer"></div>
             </div>
         </div>
     </div>
