@@ -25,12 +25,33 @@ async function openFile() {
     }
 }
 
+function openInitialFile(event, filePath) {
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const ext = require('path').extname(filePath).toLowerCase().substring(1);
+        const fileName = require('path').basename(filePath);
+        
+        const fileData = {
+            success: true,
+            filePath,
+            content,
+            extension: ext,
+            fileName
+        };
+        
+        createTab(fileData);
+    } catch (error) {
+        alert('Error opening initial file: ' + error.message);
+    }
+}
+
 openFileBtn.addEventListener('click', openFile);
 
 ipcRenderer.on('open-file', openFile);
 ipcRenderer.on('next-tab', nextTab);
 ipcRenderer.on('prev-tab', prevTab);
 ipcRenderer.on('close-tab', closeActiveTab);
+ipcRenderer.on('open-initial-file', openInitialFile);
 
 function createTab(fileData) {
     const tabId = ++tabCounter;

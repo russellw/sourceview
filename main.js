@@ -2,6 +2,18 @@ const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+// Parse command line arguments
+const args = process.argv.slice(2);
+let initialFilePath = null;
+
+// Look for file path argument (non-flag arguments)
+for (let i = 0; i < args.length; i++) {
+  if (!args[i].startsWith('--') && !args[i].startsWith('-')) {
+    initialFilePath = path.resolve(args[i]);
+    break;
+  }
+}
+
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -13,6 +25,13 @@ function createWindow() {
   });
 
   mainWindow.loadFile('index.html');
+
+  // Send initial file path to renderer if provided
+  mainWindow.webContents.once('did-finish-load', () => {
+    if (initialFilePath && fs.existsSync(initialFilePath)) {
+      mainWindow.webContents.send('open-initial-file', initialFilePath);
+    }
+  });
   
   const template = [
     {
