@@ -249,15 +249,7 @@ function createTabContent(tab) {
                <pre class="code-block"><code class="code-content ${getLanguageClass(tab.extension)}">${escapeHtml(tab.content)}</code></pre>
            </div>`;
     
-    tabContent.innerHTML = `
-        <div class="file-info">
-            <span>${getFileIcon(tab.extension)} ${tab.fileName}</span>
-            <span>${formatFileSize(tab.fileSize)}</span>
-            <span>${tab.extension.toUpperCase() || 'Unknown'}</span>
-            <span>${formatTimestamp(tab.lastModified)}</span>
-        </div>
-        ${contentArea}
-    `;
+    tabContent.innerHTML = contentArea;
     
     tabsContainer.appendChild(tabContent);
     
@@ -297,12 +289,6 @@ function createDirectoryTabContent(tab) {
         : null;
     
     tabContent.innerHTML = `
-        <div class="file-info">
-            <span>📁 ${tab.directoryName}</span>
-            <span>${tab.files.length} items</span>
-            <span>Directory</span>
-            <span>${formatTimestamp(directoryModified ? new Date(directoryModified) : null)}</span>
-        </div>
         <div class="directory-container">
             <div class="files-list">
                 ${filesList}
@@ -501,6 +487,44 @@ function switchToTab(tabId) {
     
     activeTabId = tabId;
     updateUpButtonVisibility();
+    updateToolbarInfo();
+}
+
+function updateToolbarInfo() {
+    const fileNameInfo = document.getElementById('fileNameInfo');
+    const fileSizeInfo = document.getElementById('fileSizeInfo');
+    const fileTypeInfo = document.getElementById('fileTypeInfo');
+    const fileTimeInfo = document.getElementById('fileTimeInfo');
+    
+    if (!activeTabId) {
+        // Clear info when no tab is active
+        fileNameInfo.textContent = '';
+        fileSizeInfo.textContent = '';
+        fileTypeInfo.textContent = '';
+        fileTimeInfo.textContent = '';
+        return;
+    }
+    
+    const activeTab = tabs.find(tab => tab.id === activeTabId);
+    if (!activeTab) return;
+    
+    if (activeTab.isDirectory) {
+        // Directory info
+        const directoryModified = activeTab.files.length > 0 
+            ? Math.max(...activeTab.files.map(f => new Date(f.modified).getTime()))
+            : null;
+            
+        fileNameInfo.textContent = `📁 ${activeTab.directoryName}`;
+        fileSizeInfo.textContent = `${activeTab.files.length} items`;
+        fileTypeInfo.textContent = 'Directory';
+        fileTimeInfo.textContent = formatTimestamp(directoryModified ? new Date(directoryModified) : null);
+    } else {
+        // File info
+        fileNameInfo.textContent = `${getFileIcon(activeTab.extension)} ${activeTab.fileName}`;
+        fileSizeInfo.textContent = formatFileSize(activeTab.fileSize);
+        fileTypeInfo.textContent = activeTab.extension.toUpperCase() || 'Unknown';
+        fileTimeInfo.textContent = formatTimestamp(activeTab.lastModified);
+    }
 }
 
 function closeTab(tabId) {
@@ -523,6 +547,7 @@ function closeTab(tabId) {
             activeTabId = null;
             tabBar.style.display = 'none';
             updateUpButtonVisibility();
+            updateToolbarInfo();
         }
     }
 }

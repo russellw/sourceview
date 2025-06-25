@@ -116,12 +116,33 @@ body {
     padding: 12px 20px;
     border-bottom: 1px solid #3e3e42;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .toolbar-buttons {
     display: flex;
     gap: 10px;
     align-items: center;
+}
+
+.toolbar-info {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    color: #cccccc;
+    font-size: 13px;
+}
+
+.info-item {
+    color: #cccccc;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.info-item:empty {
+    display: none;
 }
 
 .btn-primary {
