@@ -24,6 +24,8 @@ function createWindow() {
     }
   });
 
+  mainWindow.maximize();
+
   mainWindow.loadFile('index.html');
 
   // Send initial file path to renderer if provided
