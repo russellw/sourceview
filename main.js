@@ -28,10 +28,15 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
 
-  // Send initial file path to renderer if provided
+  // Send initial file/directory path to renderer if provided
   mainWindow.webContents.once('did-finish-load', () => {
     if (initialFilePath && fs.existsSync(initialFilePath)) {
-      mainWindow.webContents.send('open-initial-file', initialFilePath);
+      const stats = fs.statSync(initialFilePath);
+      if (stats.isDirectory()) {
+        mainWindow.webContents.send('open-initial-directory', initialFilePath);
+      } else {
+        mainWindow.webContents.send('open-initial-file', initialFilePath);
+      }
     }
   });
   

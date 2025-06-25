@@ -49,6 +49,34 @@ function openInitialFile(event, filePath) {
     }
 }
 
+function openInitialDirectory(event, directoryPath) {
+    try {
+        const files = fs.readdirSync(directoryPath).map(fileName => {
+            const fullPath = require('path').join(directoryPath, fileName);
+            const fileStats = fs.statSync(fullPath);
+            return {
+                name: fileName,
+                path: fullPath,
+                isDirectory: fileStats.isDirectory(),
+                size: fileStats.size,
+                modified: fileStats.mtime
+            };
+        });
+        
+        const directoryData = {
+            success: true,
+            isDirectory: true,
+            directoryPath: directoryPath,
+            directoryName: require('path').basename(directoryPath),
+            files: files
+        };
+        
+        createDirectoryTab(directoryData);
+    } catch (error) {
+        alert('Error opening initial directory: ' + error.message);
+    }
+}
+
 openFileBtn.addEventListener('click', openFile);
 
 ipcRenderer.on('open-file', openFile);
@@ -56,6 +84,7 @@ ipcRenderer.on('next-tab', nextTab);
 ipcRenderer.on('prev-tab', prevTab);
 ipcRenderer.on('close-tab', closeActiveTab);
 ipcRenderer.on('open-initial-file', openInitialFile);
+ipcRenderer.on('open-initial-directory', openInitialDirectory);
 
 function createTab(fileData) {
     const tabId = ++tabCounter;
