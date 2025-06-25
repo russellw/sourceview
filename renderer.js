@@ -300,26 +300,67 @@ function navigateToDirectory(tabId, directoryPath) {
 function goUpDirectory() {
     if (activeTabId !== null) {
         const tab = tabs.find(t => t.id === activeTabId);
-        if (tab && tab.isDirectory) {
-            const parentPath = require('path').dirname(tab.directoryPath);
-            // Don't go above root directory
-            if (parentPath !== tab.directoryPath) {
-                navigateToDirectory(tab.id, parentPath);
+        if (tab) {
+            if (tab.isDirectory) {
+                const parentPath = require('path').dirname(tab.directoryPath);
+                // Don't go above root directory
+                if (parentPath !== tab.directoryPath) {
+                    navigateToDirectory(tab.id, parentPath);
+                }
+            } else {
+                // For file tabs, open the containing directory in a new tab
+                const containingDir = require('path').dirname(tab.filePath);
+                openDirectoryInNewTab(containingDir);
             }
         }
+    }
+}
+
+function openDirectoryInNewTab(directoryPath) {
+    try {
+        const files = fs.readdirSync(directoryPath).map(fileName => {
+            const fullPath = require('path').join(directoryPath, fileName);
+            const fileStats = fs.statSync(fullPath);
+            return {
+                name: fileName,
+                path: fullPath,
+                isDirectory: fileStats.isDirectory(),
+                size: fileStats.size,
+                modified: fileStats.mtime
+            };
+        });
+        
+        const directoryData = {
+            success: true,
+            isDirectory: true,
+            directoryPath: directoryPath,
+            directoryName: require('path').basename(directoryPath),
+            files: files
+        };
+        
+        createDirectoryTab(directoryData);
+    } catch (error) {
+        alert('Error opening directory: ' + error.message);
     }
 }
 
 function updateUpButtonVisibility() {
     if (activeTabId !== null) {
         const tab = tabs.find(t => t.id === activeTabId);
-        if (tab && tab.isDirectory) {
-            const parentPath = require('path').dirname(tab.directoryPath);
-            // Show button if we can go up (not at root)
-            if (parentPath !== tab.directoryPath) {
-                upDirectoryBtn.style.display = 'inline-block';
+        if (tab) {
+            if (tab.isDirectory) {
+                const parentPath = require('path').dirname(tab.directoryPath);
+                // Show button if we can go up (not at root)
+                if (parentPath !== tab.directoryPath) {
+                    upDirectoryBtn.style.display = 'inline-block';
+                    upDirectoryBtn.title = 'Go up to parent directory';
+                } else {
+                    upDirectoryBtn.style.display = 'none';
+                }
             } else {
-                upDirectoryBtn.style.display = 'none';
+                // For file tabs, always show button to open containing directory
+                upDirectoryBtn.style.display = 'inline-block';
+                upDirectoryBtn.title = 'Open containing directory';
             }
         } else {
             upDirectoryBtn.style.display = 'none';
