@@ -137,12 +137,6 @@ body {
     overflow: hidden;
 }
 
-.welcome-tab {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 .tabs-container {
     flex: 1;
@@ -201,26 +195,6 @@ body {
     position: relative;
 }
 
-.welcome-message {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    text-align: center;
-    color: #cccccc;
-}
-
-.welcome-message h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: #ffffff;
-}
-
-.welcome-message p {
-    font-size: 1.1rem;
-    opacity: 0.8;
-}
 
 .code-block {
     margin: 0;

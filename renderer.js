@@ -2,7 +2,6 @@ const { ipcRenderer } = require('electron');
 const fs = require('fs');
 
 const openFileBtn = document.getElementById('openFileBtn');
-const welcomeTab = document.getElementById('welcomeTab');
 const tabBar = document.getElementById('tabBar');
 const tabList = document.getElementById('tabList');
 const tabsContainer = document.getElementById('tabsContainer');
@@ -110,7 +109,6 @@ function createTab(fileData) {
     createTabContent(tab);
     switchToTab(tabId);
     
-    welcomeTab.style.display = 'none';
     tabBar.style.display = 'block';
 }
 
@@ -136,7 +134,6 @@ function createDirectoryTab(directoryData) {
     createDirectoryTabContent(tab);
     switchToTab(tabId);
     
-    welcomeTab.style.display = 'none';
     tabBar.style.display = 'block';
 }
 
@@ -340,7 +337,6 @@ function closeTab(tabId) {
             switchToTab(newActiveTab.id);
         } else {
             activeTabId = null;
-            welcomeTab.style.display = 'flex';
             tabBar.style.display = 'none';
         }
     }
