@@ -86,6 +86,8 @@ ipcRenderer.on('prev-tab', prevTab);
 ipcRenderer.on('close-tab', closeActiveTab);
 ipcRenderer.on('open-initial-file', openInitialFile);
 ipcRenderer.on('open-initial-directory', openInitialDirectory);
+ipcRenderer.on('show-shortcuts', showKeyboardShortcuts);
+ipcRenderer.on('show-about', showAbout);
 
 function createTab(fileData) {
     const tabId = ++tabCounter;
@@ -489,4 +491,124 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function showKeyboardShortcuts() {
+    showModal('Keyboard Shortcuts', `
+        <div class="shortcuts-list">
+            <div class="shortcut-section">
+                <h3>File Operations</h3>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+O</span>
+                    <span class="shortcut-desc">Open File or Directory</span>
+                </div>
+            </div>
+            
+            <div class="shortcut-section">
+                <h3>Tab Navigation</h3>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+Tab</span>
+                    <span class="shortcut-desc">Next Tab</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+Shift+Tab</span>
+                    <span class="shortcut-desc">Previous Tab</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+W</span>
+                    <span class="shortcut-desc">Close Tab</span>
+                </div>
+            </div>
+            
+            <div class="shortcut-section">
+                <h3>View</h3>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">F5</span>
+                    <span class="shortcut-desc">Reload</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">F11</span>
+                    <span class="shortcut-desc">Toggle Fullscreen</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl++</span>
+                    <span class="shortcut-desc">Zoom In</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl+-</span>
+                    <span class="shortcut-desc">Zoom Out</span>
+                </div>
+            </div>
+        </div>
+    `);
+}
+
+function showAbout() {
+    showModal('About SourceView', `
+        <div class="about-content">
+            <h2>SourceView</h2>
+            <p>A modern source code viewer with syntax highlighting and directory browsing.</p>
+            
+            <div class="feature-list">
+                <h3>Features:</h3>
+                <ul>
+                    <li>📄 View source code files with syntax highlighting</li>
+                    <li>📁 Browse directories with visual grid layout</li>
+                    <li>🔗 Navigate directories by clicking folders</li>
+                    <li>⬆️ Quick parent directory navigation</li>
+                    <li>📑 Multi-tab interface for easy file switching</li>
+                    <li>🎨 Dark theme optimized for code viewing</li>
+                </ul>
+            </div>
+            
+            <div class="usage-info">
+                <h3>Usage:</h3>
+                <p>Launch with: <code>electron . [path]</code></p>
+                <p>Opens current directory by default, or specified file/directory.</p>
+            </div>
+        </div>
+    `);
+}
+
+function showModal(title, content) {
+    // Remove existing modal if any
+    const existingModal = document.querySelector('.modal-overlay');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modalHtml = `
+        <div class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>${title}</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Add event listeners
+    const modal = document.querySelector('.modal-overlay');
+    const closeBtn = modal.querySelector('.modal-close');
+    
+    closeBtn.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // Close on Escape key
+    document.addEventListener('keydown', function escapeHandler(e) {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    });
 }

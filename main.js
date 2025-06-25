@@ -101,6 +101,24 @@ function createWindow() {
           }
         }
       ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'Keyboard Shortcuts',
+          click: () => {
+            mainWindow.webContents.send('show-shortcuts');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'About SourceView',
+          click: () => {
+            mainWindow.webContents.send('show-about');
+          }
+        }
+      ]
     }
   ];
 
