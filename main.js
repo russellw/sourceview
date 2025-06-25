@@ -14,6 +14,11 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
+// Default to current working directory if no argument provided
+if (!initialFilePath) {
+  initialFilePath = process.cwd();
+}
+
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1200,
