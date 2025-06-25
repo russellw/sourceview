@@ -283,24 +283,33 @@ pre {
 
 
 .files-list {
-    padding: 0;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
 }
 
 .file-item {
     display: flex;
     align-items: center;
-    padding: 8px 20px;
-    border-bottom: 1px solid #2d2d30;
-    transition: background-color 0.2s ease;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid #3e3e42;
+    transition: all 0.2s ease;
     cursor: pointer;
+    background-color: #252526;
 }
 
 .file-item:hover {
     background-color: #2a2d2e;
+    border-color: #464647;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .file-item.file:hover {
     background-color: #094771;
+    border-color: #007acc;
 }
 
 .file-item.directory {
@@ -309,10 +318,14 @@ pre {
 
 .file-item.directory:hover {
     background-color: #2a2d2e;
+    border-color: #464647;
+    transform: none;
+    cursor: default;
 }
 
 .file-icon {
-    margin-right: 8px;
+    margin-right: 10px;
+    font-size: 16px;
 }
 
 .file-name {
@@ -321,6 +334,7 @@ pre {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 1;
 }
 
 .file-item.file .file-name {
