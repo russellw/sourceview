@@ -213,6 +213,27 @@ ipcMain.handle('open-file-dialog', async () => {
           };
         }
         
+        // Check if file is a binary that shouldn't be opened
+        const binaryExtensions = [
+          'exe', 'dll', 'so', 'dylib', 'app', 'deb', 'rpm', 'msi', 'dmg',
+          'bin', 'run', 'com', 'scr', 'pif', 'gadget',
+          'o', 'obj', 'lib', 'a', 'pyc', 'pyo', 'class', 'jar',
+          'db', 'sqlite', 'sqlite3', 'mdb', 'accdb',
+          'docx', 'xlsx', 'pptx', 'odt', 'ods', 'odp',
+          'mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a',
+          'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'm4v',
+          'zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'lzma',
+          'iso', 'img', 'vdi', 'vmdk', 'qcow2', 'vhd',
+          'ttf', 'otf', 'woff', 'woff2', 'eot', 'swf', 'fla'
+        ];
+        
+        if (binaryExtensions.includes(ext)) {
+          return {
+            success: false,
+            error: `Cannot open ${ext.toUpperCase()} files - binary format not supported`
+          };
+        }
+        
         const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp'];
         const isImage = imageExtensions.includes(ext);
         
@@ -263,6 +284,27 @@ ipcMain.handle('open-file-from-path', async (event, filePath) => {
         filePath: filePath,
         fileName: path.basename(filePath),
         extension: ext
+      };
+    }
+    
+    // Check if file is a binary that shouldn't be opened
+    const binaryExtensions = [
+      'exe', 'dll', 'so', 'dylib', 'app', 'deb', 'rpm', 'msi', 'dmg',
+      'bin', 'run', 'com', 'scr', 'pif', 'gadget',
+      'o', 'obj', 'lib', 'a', 'pyc', 'pyo', 'class', 'jar',
+      'db', 'sqlite', 'sqlite3', 'mdb', 'accdb',
+      'docx', 'xlsx', 'pptx', 'odt', 'ods', 'odp',
+      'mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a',
+      'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'm4v',
+      'zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'lzma',
+      'iso', 'img', 'vdi', 'vmdk', 'qcow2', 'vhd',
+      'ttf', 'otf', 'woff', 'woff2', 'eot', 'swf', 'fla'
+    ];
+    
+    if (binaryExtensions.includes(ext)) {
+      return {
+        success: false,
+        error: `Cannot open ${ext.toUpperCase()} files - binary format not supported`
       };
     }
     

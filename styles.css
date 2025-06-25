@@ -344,6 +344,19 @@ pre {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+.file-item.binary {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: #6a6a6a;
+}
+
+.file-item.binary:hover {
+    background-color: #252526 !important;
+    border-color: #3c3c3c !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 .file-icon {
     margin-right: 10px;
     font-size: 16px;

@@ -209,9 +209,15 @@ function createDirectoryTabContent(tab) {
     const filesList = tab.files.map(file => {
         const extension = file.isDirectory ? '' : file.name.split('.').pop();
         const icon = getFileIcon(extension, file.isDirectory);
+        const isBinary = !file.isDirectory && isBinaryFile(extension);
+        
+        let cssClasses = file.isDirectory ? 'directory' : 'file';
+        if (isBinary) {
+            cssClasses += ' binary';
+        }
         
         return `
-            <div class="file-item ${file.isDirectory ? 'directory' : 'file'}" data-path="${file.path}">
+            <div class="file-item ${cssClasses}" data-path="${file.path}" data-is-binary="${isBinary}">
                 <span class="file-icon">${icon}</span>
                 <span class="file-name">${file.name}</span>
             </div>
@@ -242,6 +248,11 @@ function createDirectoryTabContent(tab) {
     const fileItems = tabContent.querySelectorAll('.file-item.file');
     fileItems.forEach(item => {
         item.addEventListener('click', () => {
+            const isBinary = item.dataset.isBinary === 'true';
+            if (isBinary) {
+                // Ignore clicks on binary files
+                return;
+            }
             const filePath = item.dataset.path;
             openFileFromPath(filePath);
         });
@@ -541,6 +552,39 @@ function formatTimestamp(date) {
             day: 'numeric' 
         });
     }
+}
+
+function isBinaryFile(extension) {
+    const binaryExtensions = [
+        // Executables and libraries
+        'exe', 'dll', 'so', 'dylib', 'app', 'deb', 'rpm', 'msi', 'dmg',
+        'bin', 'run', 'com', 'scr', 'pif', 'gadget',
+        
+        // Compiled code
+        'o', 'obj', 'lib', 'a', 'pyc', 'pyo', 'class', 'jar',
+        
+        // Database files
+        'db', 'sqlite', 'sqlite3', 'mdb', 'accdb',
+        
+        // Office documents (binary formats)
+        'docx', 'xlsx', 'pptx', 'odt', 'ods', 'odp',
+        
+        // Audio files
+        'mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a',
+        
+        // Video files
+        'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'm4v',
+        
+        // Archive files
+        'zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'lzma',
+        
+        // Other binary formats
+        'iso', 'img', 'vdi', 'vmdk', 'qcow2', 'vhd',
+        'ttf', 'otf', 'woff', 'woff2', 'eot',
+        'swf', 'fla'
+    ];
+    
+    return binaryExtensions.includes(extension.toLowerCase());
 }
 
 function getFileIcon(extension, isDirectory = false) {
