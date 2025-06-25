@@ -245,8 +245,14 @@ function createTabContent(tab) {
         ? `<div class="image-container">
                <img src="file://${tab.filePath}" alt="${tab.fileName}" class="image-display">
            </div>`
-        : `<div class="code-container">
-               <pre class="code-block"><code class="code-content ${getLanguageClass(tab.extension)}">${escapeHtml(tab.content)}</code></pre>
+        : `<div class="code-editor-container">
+               <div class="code-container">
+                   <pre class="code-block"><code class="code-content ${getLanguageClass(tab.extension)}">${escapeHtml(tab.content)}</code></pre>
+               </div>
+               <div class="minimap-container">
+                   <canvas class="minimap-canvas" data-tab-id="${tab.id}"></canvas>
+                   <div class="minimap-viewport"></div>
+               </div>
            </div>`;
     
     tabContent.innerHTML = contentArea;
@@ -257,6 +263,8 @@ function createTabContent(tab) {
         const codeElement = tabContent.querySelector('.code-content');
         if (codeElement) {
             hljs.highlightElement(codeElement);
+            // Generate minimap after syntax highlighting
+            setTimeout(() => generateMinimap(tab.id), 0);
         }
     }
 }
@@ -488,6 +496,124 @@ function switchToTab(tabId) {
     activeTabId = tabId;
     updateUpButtonVisibility();
     updateToolbarInfo();
+}
+
+function generateMinimap(tabId) {
+    const tabContent = document.querySelector(`[data-tab-id="${tabId}"].tab-content`);
+    if (!tabContent) return;
+    
+    const codeElement = tabContent.querySelector('.code-content');
+    const canvas = tabContent.querySelector('.minimap-canvas');
+    const viewport = tabContent.querySelector('.minimap-viewport');
+    
+    if (!codeElement || !canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const codeContainer = tabContent.querySelector('.code-container');
+    
+    // Set canvas size
+    const minimapWidth = 120;
+    const minimapHeight = Math.min(600, codeContainer.clientHeight || 400);
+    canvas.width = minimapWidth;
+    canvas.height = minimapHeight;
+    canvas.style.width = minimapWidth + 'px';
+    canvas.style.height = minimapHeight + 'px';
+    
+    // Get text content and split into lines
+    const text = codeElement.textContent || '';
+    const lines = text.split('\n');
+    const lineHeight = 1; // Very small line height for minimap
+    const charWidth = 0.6; // Very small character width
+    
+    // Clear canvas
+    ctx.fillStyle = '#1e1e1e';
+    ctx.fillRect(0, 0, minimapWidth, minimapHeight);
+    
+    // Calculate scale
+    const totalContentHeight = lines.length * lineHeight;
+    const scale = minimapHeight / Math.max(totalContentHeight, minimapHeight);
+    
+    // Draw simplified representation of code
+    ctx.font = '1px monospace';
+    ctx.fillStyle = '#d4d4d4';
+    
+    lines.forEach((line, index) => {
+        const y = index * lineHeight * scale;
+        if (y > minimapHeight) return;
+        
+        // Draw a simple representation - just colored blocks for non-empty lines
+        if (line.trim().length > 0) {
+            const lineWidth = Math.min(line.length * charWidth, minimapWidth - 2);
+            
+            // Different colors for different types of content
+            if (line.trim().startsWith('//') || line.trim().startsWith('#')) {
+                ctx.fillStyle = '#6a9955'; // Comments
+            } else if (line.includes('{') || line.includes('}')) {
+                ctx.fillStyle = '#569cd6'; // Brackets/structure
+            } else if (line.trim().startsWith('function') || line.trim().startsWith('class')) {
+                ctx.fillStyle = '#dcdcaa'; // Keywords
+            } else {
+                ctx.fillStyle = '#d4d4d4'; // Default text
+            }
+            
+            ctx.fillRect(2, y, lineWidth, Math.max(1, lineHeight * scale));
+        }
+    });
+    
+    // Setup scroll synchronization
+    setupMinimapScrollSync(tabId);
+}
+
+function setupMinimapScrollSync(tabId) {
+    const tabContent = document.querySelector(`[data-tab-id="${tabId}"].tab-content`);
+    if (!tabContent) return;
+    
+    const codeContainer = tabContent.querySelector('.code-container');
+    const canvas = tabContent.querySelector('.minimap-canvas');
+    const viewport = tabContent.querySelector('.minimap-viewport');
+    
+    if (!codeContainer || !canvas || !viewport) return;
+    
+    // Update viewport indicator on scroll
+    function updateViewport() {
+        const scrollTop = codeContainer.scrollTop;
+        const scrollHeight = codeContainer.scrollHeight;
+        const clientHeight = codeContainer.clientHeight;
+        const canvasHeight = canvas.height;
+        
+        if (scrollHeight <= clientHeight) {
+            viewport.style.display = 'none';
+            return;
+        }
+        
+        viewport.style.display = 'block';
+        
+        const viewportTop = (scrollTop / scrollHeight) * canvasHeight;
+        const viewportHeight = (clientHeight / scrollHeight) * canvasHeight;
+        
+        viewport.style.top = viewportTop + 'px';
+        viewport.style.height = Math.max(10, viewportHeight) + 'px';
+    }
+    
+    // Handle minimap clicks
+    function handleMinimapClick(e) {
+        const rect = canvas.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        const percentage = y / canvas.height;
+        const scrollTop = percentage * (codeContainer.scrollHeight - codeContainer.clientHeight);
+        codeContainer.scrollTop = Math.max(0, scrollTop);
+    }
+    
+    // Remove existing listeners to prevent duplicates
+    codeContainer.removeEventListener('scroll', updateViewport);
+    canvas.removeEventListener('click', handleMinimapClick);
+    
+    // Add event listeners
+    codeContainer.addEventListener('scroll', updateViewport);
+    canvas.addEventListener('click', handleMinimapClick);
+    
+    // Initial viewport update
+    updateViewport();
 }
 
 function updateToolbarInfo() {

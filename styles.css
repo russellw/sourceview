@@ -320,10 +320,47 @@ body {
     content: "🔧";
 }
 
+/* Code editor with minimap layout */
+.code-editor-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
 .code-container {
     flex: 1;
     overflow: auto;
     position: relative;
+}
+
+/* Minimap styles */
+.minimap-container {
+    width: 120px;
+    background-color: #1e1e1e;
+    border-left: 1px solid #3e3e42;
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.minimap-canvas {
+    display: block;
+    background-color: #1e1e1e;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.minimap-viewport {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    pointer-events: none;
+    min-height: 10px;
+    box-sizing: border-box;
 }
 
 
