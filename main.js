@@ -207,7 +207,9 @@ ipcMain.handle('open-file-dialog', async () => {
           filePath: selectedPath,
           content,
           extension: ext,
-          fileName: path.basename(selectedPath)
+          fileName: path.basename(selectedPath),
+          fileSize: stats.size,
+          lastModified: stats.mtime
         };
       }
     } catch (error) {
@@ -223,6 +225,7 @@ ipcMain.handle('open-file-dialog', async () => {
 
 ipcMain.handle('open-file-from-path', async (event, filePath) => {
   try {
+    const stats = fs.statSync(filePath);
     const content = fs.readFileSync(filePath, 'utf-8');
     const ext = path.extname(filePath).toLowerCase().substring(1);
     return {
@@ -230,7 +233,9 @@ ipcMain.handle('open-file-from-path', async (event, filePath) => {
       filePath,
       content,
       extension: ext,
-      fileName: path.basename(filePath)
+      fileName: path.basename(filePath),
+      fileSize: stats.size,
+      lastModified: stats.mtime
     };
   } catch (error) {
     return {

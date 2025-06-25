@@ -104,7 +104,8 @@ function createTab(fileData) {
         filePath: fileData.filePath,
         content: fileData.content,
         extension: fileData.extension,
-        fileSize: fileData.content.length,
+        fileSize: fileData.fileSize || fileData.content.length,
+        lastModified: fileData.lastModified,
         isDirectory: false
     };
     
@@ -173,6 +174,7 @@ function createTabContent(tab) {
             <span>${tab.fileName}</span>
             <span>${formatFileSize(tab.fileSize)}</span>
             <span>${tab.extension.toUpperCase() || 'Unknown'}</span>
+            <span>${formatTimestamp(tab.lastModified)}</span>
         </div>
         <div class="code-container">
             <pre class="code-block"><code class="code-content ${getLanguageClass(tab.extension)}">${escapeHtml(tab.content)}</code></pre>
@@ -201,11 +203,16 @@ function createDirectoryTabContent(tab) {
         `;
     }).join('');
     
+    const directoryModified = tab.files.length > 0 
+        ? Math.max(...tab.files.map(f => new Date(f.modified).getTime()))
+        : null;
+    
     tabContent.innerHTML = `
         <div class="file-info">
             <span>📁 ${tab.directoryName}</span>
             <span>${tab.files.length} items</span>
             <span>Directory</span>
+            <span>${formatTimestamp(directoryModified ? new Date(directoryModified) : null)}</span>
         </div>
         <div class="directory-container">
             <div class="files-list">
@@ -491,6 +498,25 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function formatTimestamp(date) {
+    if (!date) return 'Unknown';
+    
+    const timestamp = new Date(date);
+    const now = new Date();
+    const diffMs = now - timestamp;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+        return timestamp.toLocaleTimeString();
+    } else if (diffDays === 1) {
+        return 'Yesterday';
+    } else if (diffDays < 7) {
+        return `${diffDays} days ago`;
+    } else {
+        return timestamp.toLocaleDateString();
+    }
 }
 
 function showKeyboardShortcuts() {
