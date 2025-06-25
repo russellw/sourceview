@@ -171,7 +171,7 @@ function createTabContent(tab) {
     
     tabContent.innerHTML = `
         <div class="file-info">
-            <span>${tab.fileName}</span>
+            <span>${getFileIcon(tab.extension)} ${tab.fileName}</span>
             <span>${formatFileSize(tab.fileSize)}</span>
             <span>${tab.extension.toUpperCase() || 'Unknown'}</span>
             <span>${formatTimestamp(tab.lastModified)}</span>
@@ -193,7 +193,8 @@ function createDirectoryTabContent(tab) {
     tabContent.dataset.tabId = tab.id;
     
     const filesList = tab.files.map(file => {
-        const icon = file.isDirectory ? '📁' : '📄';
+        const extension = file.isDirectory ? '' : file.name.split('.').pop();
+        const icon = getFileIcon(extension, file.isDirectory);
         
         return `
             <div class="file-item ${file.isDirectory ? 'directory' : 'file'}" data-path="${file.path}">
@@ -521,6 +522,105 @@ function formatTimestamp(date) {
             day: 'numeric' 
         });
     }
+}
+
+function getFileIcon(extension, isDirectory = false) {
+    if (isDirectory) return '📁';
+    
+    const iconMap = {
+        // Programming languages
+        'js': '📜',
+        'jsx': '⚛️',
+        'ts': '📘',
+        'tsx': '⚛️',
+        'py': '🐍',
+        'java': '☕',
+        'cpp': '⚙️',
+        'c': '⚙️',
+        'cs': '🔷',
+        'php': '🐘',
+        'rb': '💎',
+        'go': '🐹',
+        'rs': '🦀',
+        'swift': '🦉',
+        'kt': '🎯',
+        'scala': '🔺',
+        
+        // Web technologies
+        'html': '🌐',
+        'htm': '🌐',
+        'css': '🎨',
+        'scss': '🎨',
+        'sass': '🎨',
+        'less': '🎨',
+        'vue': '💚',
+        'svelte': '🧡',
+        
+        // Data formats
+        'json': '📋',
+        'xml': '📋',
+        'yaml': '📋',
+        'yml': '📋',
+        'csv': '📊',
+        'sql': '🗃️',
+        
+        // Documentation
+        'md': '📝',
+        'txt': '📄',
+        'pdf': '📕',
+        'doc': '📄',
+        'docx': '📄',
+        'rtf': '📄',
+        
+        // Images
+        'png': '🖼️',
+        'jpg': '🖼️',
+        'jpeg': '🖼️',
+        'gif': '🖼️',
+        'svg': '🖼️',
+        'webp': '🖼️',
+        'ico': '🖼️',
+        'bmp': '🖼️',
+        
+        // Audio/Video
+        'mp3': '🎵',
+        'wav': '🎵',
+        'flac': '🎵',
+        'mp4': '🎬',
+        'avi': '🎬',
+        'mkv': '🎬',
+        'mov': '🎬',
+        
+        // Archives
+        'zip': '📦',
+        'rar': '📦',
+        '7z': '📦',
+        'tar': '📦',
+        'gz': '📦',
+        
+        // Config files
+        'config': '⚙️',
+        'conf': '⚙️',
+        'ini': '⚙️',
+        'env': '🔧',
+        
+        // Build files
+        'dockerfile': '🐳',
+        'makefile': '🔨',
+        'package': '📦',
+        'lock': '🔒',
+        
+        // Shell scripts
+        'sh': '💻',
+        'bash': '💻',
+        'zsh': '💻',
+        'fish': '💻',
+        'ps1': '💻',
+        'bat': '💻',
+        'cmd': '💻'
+    };
+    
+    return iconMap[extension.toLowerCase()] || '📄';
 }
 
 function showKeyboardShortcuts() {
