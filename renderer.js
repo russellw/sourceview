@@ -16,7 +16,10 @@ async function openFile() {
         const result = await ipcRenderer.invoke('open-file-dialog');
         
         if (result.success) {
-            if (result.isDirectory) {
+            if (result.openedExternally) {
+                // File was opened in external application, no need to create tab
+                return;
+            } else if (result.isDirectory) {
                 createDirectoryTab(result);
             } else {
                 createTab(result);
@@ -258,7 +261,12 @@ async function openFileFromPath(filePath) {
         const result = await ipcRenderer.invoke('open-file-from-path', filePath);
         
         if (result.success) {
-            createTab(result);
+            if (result.openedExternally) {
+                // File was opened in external application, no need to create tab
+                return;
+            } else {
+                createTab(result);
+            }
         } else {
             alert('Error opening file: ' + result.error);
         }

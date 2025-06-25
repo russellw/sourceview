@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -200,6 +200,19 @@ ipcMain.handle('open-file-dialog', async () => {
       } else {
         // Handle file
         const ext = path.extname(selectedPath).toLowerCase().substring(1);
+        
+        // Check if file should be opened externally
+        if (ext === 'pdf') {
+          shell.openPath(selectedPath);
+          return {
+            success: true,
+            openedExternally: true,
+            filePath: selectedPath,
+            fileName: path.basename(selectedPath),
+            extension: ext
+          };
+        }
+        
         const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp'];
         const isImage = imageExtensions.includes(ext);
         
@@ -240,6 +253,19 @@ ipcMain.handle('open-file-from-path', async (event, filePath) => {
   try {
     const stats = fs.statSync(filePath);
     const ext = path.extname(filePath).toLowerCase().substring(1);
+    
+    // Check if file should be opened externally
+    if (ext === 'pdf') {
+      shell.openPath(filePath);
+      return {
+        success: true,
+        openedExternally: true,
+        filePath: filePath,
+        fileName: path.basename(filePath),
+        extension: ext
+      };
+    }
+    
     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp'];
     const isImage = imageExtensions.includes(ext);
     
