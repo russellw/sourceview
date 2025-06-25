@@ -2,6 +2,7 @@ const { ipcRenderer } = require('electron');
 const fs = require('fs');
 
 const openFileBtn = document.getElementById('openFileBtn');
+const upDirectoryBtn = document.getElementById('upDirectoryBtn');
 const tabBar = document.getElementById('tabBar');
 const tabList = document.getElementById('tabList');
 const tabsContainer = document.getElementById('tabsContainer');
@@ -77,6 +78,7 @@ function openInitialDirectory(event, directoryPath) {
 }
 
 openFileBtn.addEventListener('click', openFile);
+upDirectoryBtn.addEventListener('click', goUpDirectory);
 
 ipcRenderer.on('open-file', openFile);
 ipcRenderer.on('next-tab', nextTab);
@@ -295,6 +297,38 @@ function navigateToDirectory(tabId, directoryPath) {
     }
 }
 
+function goUpDirectory() {
+    if (activeTabId !== null) {
+        const tab = tabs.find(t => t.id === activeTabId);
+        if (tab && tab.isDirectory) {
+            const parentPath = require('path').dirname(tab.directoryPath);
+            // Don't go above root directory
+            if (parentPath !== tab.directoryPath) {
+                navigateToDirectory(tab.id, parentPath);
+            }
+        }
+    }
+}
+
+function updateUpButtonVisibility() {
+    if (activeTabId !== null) {
+        const tab = tabs.find(t => t.id === activeTabId);
+        if (tab && tab.isDirectory) {
+            const parentPath = require('path').dirname(tab.directoryPath);
+            // Show button if we can go up (not at root)
+            if (parentPath !== tab.directoryPath) {
+                upDirectoryBtn.style.display = 'inline-block';
+            } else {
+                upDirectoryBtn.style.display = 'none';
+            }
+        } else {
+            upDirectoryBtn.style.display = 'none';
+        }
+    } else {
+        upDirectoryBtn.style.display = 'none';
+    }
+}
+
 function switchToTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
@@ -317,6 +351,7 @@ function switchToTab(tabId) {
     }
     
     activeTabId = tabId;
+    updateUpButtonVisibility();
 }
 
 function closeTab(tabId) {
@@ -338,6 +373,7 @@ function closeTab(tabId) {
         } else {
             activeTabId = null;
             tabBar.style.display = 'none';
+            updateUpButtonVisibility();
         }
     }
 }

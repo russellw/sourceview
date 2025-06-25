@@ -34,6 +34,12 @@ body {
     color: #ffffff;
 }
 
+.header-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .btn-primary {
     background-color: #007acc;
     color: white;
@@ -52,6 +58,26 @@ body {
 
 .btn-primary:active {
     background-color: #004578;
+}
+
+.btn-secondary {
+    background-color: #464647;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #5a5a5c;
+}
+
+.btn-secondary:active {
+    background-color: #3e3e42;
 }
 
 .main-content {
