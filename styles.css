@@ -313,14 +313,14 @@ pre {
 }
 
 .file-item.directory {
-    cursor: default;
+    cursor: pointer;
 }
 
 .file-item.directory:hover {
     background-color: #2a2d2e;
     border-color: #464647;
-    transform: none;
-    cursor: default;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .file-icon {

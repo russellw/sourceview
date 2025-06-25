@@ -215,12 +215,20 @@ function createDirectoryTabContent(tab) {
     
     tabsContainer.appendChild(tabContent);
     
-    // Add click handlers for files
+    // Add click handlers for files and directories
     const fileItems = tabContent.querySelectorAll('.file-item.file');
     fileItems.forEach(item => {
         item.addEventListener('click', () => {
             const filePath = item.dataset.path;
             openFileFromPath(filePath);
+        });
+    });
+    
+    const directoryItems = tabContent.querySelectorAll('.file-item.directory');
+    directoryItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const directoryPath = item.dataset.path;
+            navigateToDirectory(tab.id, directoryPath);
         });
     });
 }
@@ -236,6 +244,57 @@ async function openFileFromPath(filePath) {
         }
     } catch (error) {
         alert('Error opening file: ' + error.message);
+    }
+}
+
+function navigateToDirectory(tabId, directoryPath) {
+    try {
+        const files = fs.readdirSync(directoryPath).map(fileName => {
+            const fullPath = require('path').join(directoryPath, fileName);
+            const fileStats = fs.statSync(fullPath);
+            return {
+                name: fileName,
+                path: fullPath,
+                isDirectory: fileStats.isDirectory(),
+                size: fileStats.size,
+                modified: fileStats.mtime
+            };
+        });
+        
+        // Update the tab data
+        const tab = tabs.find(t => t.id === tabId);
+        if (tab) {
+            tab.directoryPath = directoryPath;
+            tab.directoryName = require('path').basename(directoryPath);
+            tab.files = files;
+            
+            // Update tab title
+            const tabElement = document.querySelector(`[data-tab-id="${tabId}"]`);
+            if (tabElement && tabElement.classList.contains('tab')) {
+                const titleElement = tabElement.querySelector('.tab-title');
+                if (titleElement) {
+                    titleElement.textContent = `📁 ${tab.directoryName}`;
+                    titleElement.title = tab.directoryPath;
+                }
+            }
+            
+            // Update tab content
+            const tabContent = tabsContainer.querySelector(`[data-tab-id="${tabId}"]`);
+            if (tabContent) {
+                tabContent.remove();
+                createDirectoryTabContent(tab);
+                
+                // Make sure the tab is still active
+                if (activeTabId === tabId) {
+                    const newTabContent = tabsContainer.querySelector(`[data-tab-id="${tabId}"]`);
+                    if (newTabContent) {
+                        newTabContent.classList.remove('hidden');
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        alert('Error navigating to directory: ' + error.message);
     }
 }
 
