@@ -110,10 +110,17 @@ body {
     pointer-events: none;
 }
 
-.title-bar-buttons {
-    -webkit-app-region: no-drag;
+/* Toolbar */
+.toolbar {
+    background-color: #2d2d30;
+    padding: 12px 20px;
+    border-bottom: 1px solid #3e3e42;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-buttons {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
 }
 
@@ -121,13 +128,12 @@ body {
     background-color: #007acc;
     color: white;
     border: none;
-    padding: 6px 12px;
-    border-radius: 3px;
+    padding: 10px 20px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     transition: background-color 0.2s ease;
-    height: 24px;
 }
 
 .btn-primary:hover {
@@ -142,13 +148,12 @@ body {
     background-color: #464647;
     color: white;
     border: none;
-    padding: 6px 12px;
-    border-radius: 3px;
+    padding: 10px 20px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     transition: background-color 0.2s ease;
-    height: 24px;
 }
 
 .btn-secondary:hover {
