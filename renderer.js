@@ -191,15 +191,11 @@ function createDirectoryTabContent(tab) {
     
     const filesList = tab.files.map(file => {
         const icon = file.isDirectory ? '📁' : '📄';
-        const size = file.isDirectory ? '' : formatFileSize(file.size);
-        const modified = new Date(file.modified).toLocaleDateString();
         
         return `
             <div class="file-item ${file.isDirectory ? 'directory' : 'file'}" data-path="${file.path}">
                 <span class="file-icon">${icon}</span>
                 <span class="file-name">${file.name}</span>
-                <span class="file-size">${size}</span>
-                <span class="file-modified">${modified}</span>
             </div>
         `;
     }).join('');
@@ -211,11 +207,6 @@ function createDirectoryTabContent(tab) {
             <span>Directory</span>
         </div>
         <div class="directory-container">
-            <div class="directory-header">
-                <span class="header-name">Name</span>
-                <span class="header-size">Size</span>
-                <span class="header-modified">Modified</span>
-            </div>
             <div class="files-list">
                 ${filesList}
             </div>
