@@ -23,6 +23,12 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#1e1e1e',
+      symbolColor: '#ffffff',
+      height: 32
+    },
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -140,7 +146,8 @@ function createWindow() {
   }
 
   const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
+  // Don't set application menu since we'll use custom title bar
+  // Menu.setApplicationMenu(menu);
 }
 
 app.whenReady().then(createWindow);

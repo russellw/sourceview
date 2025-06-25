@@ -83,6 +83,74 @@ function openInitialDirectory(event, directoryPath) {
 openFileBtn.addEventListener('click', openFile);
 upDirectoryBtn.addEventListener('click', goUpDirectory);
 
+// Custom title bar menu functionality
+document.addEventListener('DOMContentLoaded', () => {
+    // Handle menu option clicks
+    document.querySelectorAll('.menu-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            const action = e.target.dataset.action;
+            handleMenuAction(action);
+        });
+    });
+    
+    // Close dropdown menus when clicking elsewhere
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.menu-item')) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+    });
+    
+    // Show dropdown on click instead of hover for better UX
+    document.querySelectorAll('.menu-label').forEach(label => {
+        label.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const menu = label.parentElement.querySelector('.dropdown-menu');
+            const isVisible = menu.style.display === 'block';
+            
+            // Hide all other menus
+            document.querySelectorAll('.dropdown-menu').forEach(m => {
+                m.style.display = 'none';
+            });
+            
+            // Toggle current menu
+            menu.style.display = isVisible ? 'none' : 'block';
+        });
+    });
+});
+
+function handleMenuAction(action) {
+    switch (action) {
+        case 'open':
+            openFile();
+            break;
+        case 'exit':
+            window.close();
+            break;
+        case 'next-tab':
+            nextTab();
+            break;
+        case 'prev-tab':
+            prevTab();
+            break;
+        case 'close-tab':
+            closeActiveTab();
+            break;
+        case 'shortcuts':
+            showKeyboardShortcuts();
+            break;
+        case 'about':
+            showAbout();
+            break;
+    }
+    
+    // Hide all dropdown menus after action
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+    });
+}
+
 ipcRenderer.on('open-file', openFile);
 ipcRenderer.on('next-tab', nextTab);
 ipcRenderer.on('prev-tab', prevTab);

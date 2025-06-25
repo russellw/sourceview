@@ -9,13 +9,41 @@
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <h1>SourceView</h1>
-            <div class="header-buttons">
-                <button id="upDirectoryBtn" class="btn-secondary" title="Go up to parent directory" style="display: none;">↑ Up</button>
-                <button id="openFileBtn" class="btn-primary">Open File</button>
+        <div class="custom-title-bar">
+            <div class="title-bar-content">
+                <div class="title-bar-menu">
+                    <div class="menu-item" id="fileMenu">
+                        <span class="menu-label">File</span>
+                        <div class="dropdown-menu">
+                            <div class="menu-option" data-action="open">Open</div>
+                            <div class="menu-divider"></div>
+                            <div class="menu-option" data-action="exit">Exit</div>
+                        </div>
+                    </div>
+                    <div class="menu-item" id="viewMenu">
+                        <span class="menu-label">View</span>
+                        <div class="dropdown-menu">
+                            <div class="menu-option" data-action="next-tab">Next Tab</div>
+                            <div class="menu-option" data-action="prev-tab">Previous Tab</div>
+                            <div class="menu-option" data-action="close-tab">Close Tab</div>
+                        </div>
+                    </div>
+                    <div class="menu-item" id="helpMenu">
+                        <span class="menu-label">Help</span>
+                        <div class="dropdown-menu">
+                            <div class="menu-option" data-action="shortcuts">Keyboard Shortcuts</div>
+                            <div class="menu-divider"></div>
+                            <div class="menu-option" data-action="about">About SourceView</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-bar-title">SourceView</div>
+                <div class="title-bar-buttons">
+                    <button id="upDirectoryBtn" class="btn-secondary" title="Go up to parent directory" style="display: none;">↑ Up</button>
+                    <button id="openFileBtn" class="btn-primary">Open File</button>
+                </div>
             </div>
-        </header>
+        </div>
         
         <div class="main-content">
             <div class="tab-bar" id="tabBar" style="display: none;">
