@@ -106,7 +106,8 @@ function createTab(fileData) {
         extension: fileData.extension,
         fileSize: fileData.fileSize || fileData.content.length,
         lastModified: fileData.lastModified,
-        isDirectory: false
+        isDirectory: false,
+        isImage: fileData.isImage || false
     };
     
     tabs.push(tab);
@@ -169,6 +170,14 @@ function createTabContent(tab) {
     tabContent.className = 'tab-content hidden';
     tabContent.dataset.tabId = tab.id;
     
+    const contentArea = tab.isImage 
+        ? `<div class="image-container">
+               <img src="file://${tab.filePath}" alt="${tab.fileName}" class="image-display">
+           </div>`
+        : `<div class="code-container">
+               <pre class="code-block"><code class="code-content ${getLanguageClass(tab.extension)}">${escapeHtml(tab.content)}</code></pre>
+           </div>`;
+    
     tabContent.innerHTML = `
         <div class="file-info">
             <span>${getFileIcon(tab.extension)} ${tab.fileName}</span>
@@ -176,15 +185,17 @@ function createTabContent(tab) {
             <span>${tab.extension.toUpperCase() || 'Unknown'}</span>
             <span>${formatTimestamp(tab.lastModified)}</span>
         </div>
-        <div class="code-container">
-            <pre class="code-block"><code class="code-content ${getLanguageClass(tab.extension)}">${escapeHtml(tab.content)}</code></pre>
-        </div>
+        ${contentArea}
     `;
     
     tabsContainer.appendChild(tabContent);
     
-    const codeElement = tabContent.querySelector('.code-content');
-    hljs.highlightElement(codeElement);
+    if (!tab.isImage) {
+        const codeElement = tabContent.querySelector('.code-content');
+        if (codeElement) {
+            hljs.highlightElement(codeElement);
+        }
+    }
 }
 
 function createDirectoryTabContent(tab) {

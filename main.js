@@ -199,8 +199,20 @@ ipcMain.handle('open-file-dialog', async () => {
         };
       } else {
         // Handle file
-        const content = fs.readFileSync(selectedPath, 'utf-8');
         const ext = path.extname(selectedPath).toLowerCase().substring(1);
+        const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp'];
+        const isImage = imageExtensions.includes(ext);
+        
+        let content = '';
+        if (!isImage) {
+          try {
+            content = fs.readFileSync(selectedPath, 'utf-8');
+          } catch (error) {
+            // If file can't be read as text, treat as binary
+            content = '[Binary file - cannot display as text]';
+          }
+        }
+        
         return {
           success: true,
           isDirectory: false,
@@ -209,7 +221,8 @@ ipcMain.handle('open-file-dialog', async () => {
           extension: ext,
           fileName: path.basename(selectedPath),
           fileSize: stats.size,
-          lastModified: stats.mtime
+          lastModified: stats.mtime,
+          isImage: isImage
         };
       }
     } catch (error) {
@@ -226,8 +239,20 @@ ipcMain.handle('open-file-dialog', async () => {
 ipcMain.handle('open-file-from-path', async (event, filePath) => {
   try {
     const stats = fs.statSync(filePath);
-    const content = fs.readFileSync(filePath, 'utf-8');
     const ext = path.extname(filePath).toLowerCase().substring(1);
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp'];
+    const isImage = imageExtensions.includes(ext);
+    
+    let content = '';
+    if (!isImage) {
+      try {
+        content = fs.readFileSync(filePath, 'utf-8');
+      } catch (error) {
+        // If file can't be read as text, treat as binary
+        content = '[Binary file - cannot display as text]';
+      }
+    }
+    
     return {
       success: true,
       filePath,
@@ -235,7 +260,8 @@ ipcMain.handle('open-file-from-path', async (event, filePath) => {
       extension: ext,
       fileName: path.basename(filePath),
       fileSize: stats.size,
-      lastModified: stats.mtime
+      lastModified: stats.mtime,
+      isImage: isImage
     };
   } catch (error) {
     return {
