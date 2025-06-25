@@ -131,7 +131,7 @@ app.on('activate', () => {
 
 ipcMain.handle('open-file-dialog', async () => {
   const result = await dialog.showOpenDialog({
-    properties: ['openFile'],
+    properties: ['openFile', 'openDirectory'],
     filters: [
       { name: 'All Files', extensions: ['*'] },
       { name: 'JavaScript', extensions: ['js', 'jsx', 'ts', 'tsx'] },
@@ -144,17 +144,44 @@ ipcMain.handle('open-file-dialog', async () => {
   });
   
   if (!result.canceled && result.filePaths.length > 0) {
-    const filePath = result.filePaths[0];
+    const selectedPath = result.filePaths[0];
     try {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const ext = path.extname(filePath).toLowerCase().substring(1);
-      return {
-        success: true,
-        filePath,
-        content,
-        extension: ext,
-        fileName: path.basename(filePath)
-      };
+      const stats = fs.statSync(selectedPath);
+      
+      if (stats.isDirectory()) {
+        // Handle directory
+        const files = fs.readdirSync(selectedPath).map(fileName => {
+          const fullPath = path.join(selectedPath, fileName);
+          const fileStats = fs.statSync(fullPath);
+          return {
+            name: fileName,
+            path: fullPath,
+            isDirectory: fileStats.isDirectory(),
+            size: fileStats.size,
+            modified: fileStats.mtime
+          };
+        });
+        
+        return {
+          success: true,
+          isDirectory: true,
+          directoryPath: selectedPath,
+          directoryName: path.basename(selectedPath),
+          files: files
+        };
+      } else {
+        // Handle file
+        const content = fs.readFileSync(selectedPath, 'utf-8');
+        const ext = path.extname(selectedPath).toLowerCase().substring(1);
+        return {
+          success: true,
+          isDirectory: false,
+          filePath: selectedPath,
+          content,
+          extension: ext,
+          fileName: path.basename(selectedPath)
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -164,4 +191,23 @@ ipcMain.handle('open-file-dialog', async () => {
   }
   
   return { success: false, canceled: true };
+});
+
+ipcMain.handle('open-file-from-path', async (event, filePath) => {
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const ext = path.extname(filePath).toLowerCase().substring(1);
+    return {
+      success: true,
+      filePath,
+      content,
+      extension: ext,
+      fileName: path.basename(filePath)
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message
+    };
+  }
 });

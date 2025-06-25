@@ -16,7 +16,11 @@ async function openFile() {
         const result = await ipcRenderer.invoke('open-file-dialog');
         
         if (result.success) {
-            createTab(result);
+            if (result.isDirectory) {
+                createDirectoryTab(result);
+            } else {
+                createTab(result);
+            }
         } else if (!result.canceled) {
             alert('Error loading file: ' + result.error);
         }
@@ -68,7 +72,8 @@ function createTab(fileData) {
         filePath: fileData.filePath,
         content: fileData.content,
         extension: fileData.extension,
-        fileSize: fileData.content.length
+        fileSize: fileData.content.length,
+        isDirectory: false
     };
     
     tabs.push(tab);
@@ -80,13 +85,42 @@ function createTab(fileData) {
     tabBar.style.display = 'block';
 }
 
+function createDirectoryTab(directoryData) {
+    const tabId = ++tabCounter;
+    const existingTab = tabs.find(tab => tab.directoryPath === directoryData.directoryPath);
+    
+    if (existingTab) {
+        switchToTab(existingTab.id);
+        return;
+    }
+    
+    const tab = {
+        id: tabId,
+        directoryName: directoryData.directoryName,
+        directoryPath: directoryData.directoryPath,
+        files: directoryData.files,
+        isDirectory: true
+    };
+    
+    tabs.push(tab);
+    createTabElement(tab);
+    createDirectoryTabContent(tab);
+    switchToTab(tabId);
+    
+    welcomeTab.style.display = 'none';
+    tabBar.style.display = 'block';
+}
+
 function createTabElement(tab) {
     const tabElement = document.createElement('div');
     tabElement.className = 'tab';
     tabElement.dataset.tabId = tab.id;
     
+    const title = tab.isDirectory ? tab.directoryPath : tab.filePath;
+    const name = tab.isDirectory ? `📁 ${tab.directoryName}` : tab.fileName;
+    
     tabElement.innerHTML = `
-        <span class="tab-title" title="${tab.filePath}">${tab.fileName}</span>
+        <span class="tab-title" title="${title}">${name}</span>
         <button class="tab-close" onclick="closeTab(${tab.id})">&times;</button>
     `;
     
@@ -119,6 +153,70 @@ function createTabContent(tab) {
     
     const codeElement = tabContent.querySelector('.code-content');
     hljs.highlightElement(codeElement);
+}
+
+function createDirectoryTabContent(tab) {
+    const tabContent = document.createElement('div');
+    tabContent.className = 'tab-content hidden';
+    tabContent.dataset.tabId = tab.id;
+    
+    const filesList = tab.files.map(file => {
+        const icon = file.isDirectory ? '📁' : '📄';
+        const size = file.isDirectory ? '' : formatFileSize(file.size);
+        const modified = new Date(file.modified).toLocaleDateString();
+        
+        return `
+            <div class="file-item ${file.isDirectory ? 'directory' : 'file'}" data-path="${file.path}">
+                <span class="file-icon">${icon}</span>
+                <span class="file-name">${file.name}</span>
+                <span class="file-size">${size}</span>
+                <span class="file-modified">${modified}</span>
+            </div>
+        `;
+    }).join('');
+    
+    tabContent.innerHTML = `
+        <div class="file-info">
+            <span>📁 ${tab.directoryName}</span>
+            <span>${tab.files.length} items</span>
+            <span>Directory</span>
+        </div>
+        <div class="directory-container">
+            <div class="directory-header">
+                <span class="header-name">Name</span>
+                <span class="header-size">Size</span>
+                <span class="header-modified">Modified</span>
+            </div>
+            <div class="files-list">
+                ${filesList}
+            </div>
+        </div>
+    `;
+    
+    tabsContainer.appendChild(tabContent);
+    
+    // Add click handlers for files
+    const fileItems = tabContent.querySelectorAll('.file-item.file');
+    fileItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const filePath = item.dataset.path;
+            openFileFromPath(filePath);
+        });
+    });
+}
+
+async function openFileFromPath(filePath) {
+    try {
+        const result = await ipcRenderer.invoke('open-file-from-path', filePath);
+        
+        if (result.success) {
+            createTab(result);
+        } else {
+            alert('Error opening file: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error opening file: ' + error.message);
+    }
 }
 
 function switchToTab(tabId) {

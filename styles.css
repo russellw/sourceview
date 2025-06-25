@@ -273,3 +273,98 @@ pre {
     padding: 0;
     background: transparent;
 }
+
+/* Directory listing styles */
+.directory-container {
+    flex: 1;
+    overflow: auto;
+    background-color: #1e1e1e;
+}
+
+.directory-header {
+    display: grid;
+    grid-template-columns: 1fr 100px 120px;
+    gap: 20px;
+    padding: 12px 20px;
+    background-color: #252526;
+    border-bottom: 1px solid #3e3e42;
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.files-list {
+    padding: 0;
+}
+
+.file-item {
+    display: grid;
+    grid-template-columns: 1fr 100px 120px;
+    gap: 20px;
+    padding: 8px 20px;
+    border-bottom: 1px solid #2d2d30;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    align-items: center;
+}
+
+.file-item:hover {
+    background-color: #2a2d2e;
+}
+
+.file-item.file:hover {
+    background-color: #094771;
+}
+
+.file-item.directory {
+    cursor: default;
+}
+
+.file-item.directory:hover {
+    background-color: #2a2d2e;
+}
+
+.file-icon {
+    margin-right: 8px;
+}
+
+.file-name {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #cccccc;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-item.file .file-name {
+    color: #ffffff;
+}
+
+.file-size {
+    font-size: 13px;
+    color: #858585;
+    text-align: right;
+}
+
+.file-modified {
+    font-size: 13px;
+    color: #858585;
+    text-align: right;
+}
+
+.header-name,
+.header-size,
+.header-modified {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Override file-info icons for directory tabs */
+.file-info span:first-child:before {
+    content: none;
+}
