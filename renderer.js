@@ -515,7 +515,11 @@ function formatTimestamp(date) {
     } else if (diffDays < 7) {
         return `${diffDays} days ago`;
     } else {
-        return timestamp.toLocaleDateString();
+        return timestamp.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
     }
 }
 
