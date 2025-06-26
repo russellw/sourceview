@@ -521,10 +521,17 @@ function generateMinimap(tabId) {
     const containerHeight = codeContainer.clientHeight || codeContainer.scrollHeight || 400;
     const minimapWidth = 120;
     const minimapHeight = Math.min(600, containerHeight);
+    
+    // Set canvas dimensions
     canvas.width = minimapWidth;
     canvas.height = minimapHeight;
     canvas.style.width = minimapWidth + 'px';
     canvas.style.height = minimapHeight + 'px';
+    canvas.style.display = 'block';
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.cursor = 'pointer';
     
     // Get text content and split into lines
     const text = codeElement.textContent || '';
@@ -611,15 +618,9 @@ function setupMinimapScrollSync(tabId) {
         e.preventDefault();
         e.stopPropagation();
         
-        // Get the clicked element's bounds (canvas or container)
-        let targetElement = canvas;
-        let rect = canvas.getBoundingClientRect();
-        
-        // If click was on container, adjust
-        if (e.target.classList.contains('minimap-container')) {
-            targetElement = e.target;
-            rect = e.target.getBoundingClientRect();
-        }
+        // Always use the minimap container for consistent coordinates
+        const minimapContainer = tabContent.querySelector('.minimap-container');
+        const rect = minimapContainer.getBoundingClientRect();
         
         // Visual feedback
         canvas.style.opacity = '0.7';
@@ -627,6 +628,7 @@ function setupMinimapScrollSync(tabId) {
             canvas.style.opacity = '1';
         }, 150);
         
+        // Calculate click position relative to minimap container
         const y = e.clientY - rect.top;
         const clickPercentage = Math.max(0, Math.min(1, y / rect.height));
         
@@ -636,14 +638,18 @@ function setupMinimapScrollSync(tabId) {
         const maxScrollTop = Math.max(0, scrollHeight - clientHeight);
         
         if (maxScrollTop > 0) {
+            // Calculate target scroll position
             const targetScrollTop = clickPercentage * maxScrollTop;
             const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
             
-            // Apply scroll to the correct element
-            scrollElement.scrollTop = finalScrollTop;
+            // Apply scroll smoothly
+            scrollElement.scrollTo({
+                top: finalScrollTop,
+                behavior: 'smooth'
+            });
             
-            // Force update
-            setTimeout(() => updateViewport(), 10);
+            // Force viewport update after scroll
+            setTimeout(() => updateViewport(), 100);
         }
     }
     
@@ -669,7 +675,18 @@ function setupMinimapScrollSync(tabId) {
     // Also add click handler to minimap container as fallback
     const minimapContainer = tabContent.querySelector('.minimap-container');
     if (minimapContainer) {
+        // Remove existing click handler to prevent duplicates
+        const existingContainerHandler = minimapContainer._minimapClickHandler;
+        if (existingContainerHandler) {
+            minimapContainer.removeEventListener('click', existingContainerHandler);
+        }
+        
+        // Store and add the handler
+        minimapContainer._minimapClickHandler = handleMinimapClick;
         minimapContainer.addEventListener('click', handleMinimapClick);
+        
+        // Ensure the container is clickable with proper cursor
+        minimapContainer.style.cursor = 'pointer';
     }
     
     // Initial viewport update
