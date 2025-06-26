@@ -263,8 +263,13 @@ function createTabContent(tab) {
         const codeElement = tabContent.querySelector('.code-content');
         if (codeElement) {
             hljs.highlightElement(codeElement);
-            // Generate minimap after syntax highlighting
-            setTimeout(() => generateMinimap(tab.id), 0);
+            // Generate minimap after syntax highlighting and DOM is ready
+            setTimeout(() => {
+                // Ensure container dimensions are available
+                requestAnimationFrame(() => {
+                    generateMinimap(tab.id);
+                });
+            }, 50);
         }
     }
 }
@@ -510,10 +515,12 @@ function generateMinimap(tabId) {
     
     const ctx = canvas.getContext('2d');
     const codeContainer = tabContent.querySelector('.code-container');
+    const codeBlock = tabContent.querySelector('.code-block');
     
-    // Set canvas size
+    // Set canvas size - make sure container has proper dimensions
+    const containerHeight = codeContainer.clientHeight || codeContainer.scrollHeight || 400;
     const minimapWidth = 120;
-    const minimapHeight = Math.min(600, codeContainer.clientHeight || 400);
+    const minimapHeight = Math.min(600, containerHeight);
     canvas.width = minimapWidth;
     canvas.height = minimapHeight;
     canvas.style.width = minimapWidth + 'px';
@@ -569,16 +576,20 @@ function setupMinimapScrollSync(tabId) {
     if (!tabContent) return;
     
     const codeContainer = tabContent.querySelector('.code-container');
+    const codeBlock = tabContent.querySelector('.code-block');
     const canvas = tabContent.querySelector('.minimap-canvas');
     const viewport = tabContent.querySelector('.minimap-viewport');
     
     if (!codeContainer || !canvas || !viewport) return;
     
+    // Determine which element actually scrolls
+    const scrollElement = codeBlock || codeContainer;
+    
     // Update viewport indicator on scroll
     function updateViewport() {
-        const scrollTop = codeContainer.scrollTop;
-        const scrollHeight = codeContainer.scrollHeight;
-        const clientHeight = codeContainer.clientHeight;
+        const scrollTop = scrollElement.scrollTop;
+        const scrollHeight = scrollElement.scrollHeight;
+        const clientHeight = scrollElement.clientHeight;
         const canvasHeight = canvas.height;
         
         if (scrollHeight <= clientHeight) {
@@ -597,20 +608,87 @@ function setupMinimapScrollSync(tabId) {
     
     // Handle minimap clicks
     function handleMinimapClick(e) {
-        const rect = canvas.getBoundingClientRect();
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('Minimap clicked!', e.target); // Debug log
+        
+        // Get the clicked element's bounds (canvas or container)
+        let targetElement = canvas;
+        let rect = canvas.getBoundingClientRect();
+        
+        // If click was on container, adjust
+        if (e.target.classList.contains('minimap-container')) {
+            targetElement = e.target;
+            rect = e.target.getBoundingClientRect();
+        }
+        
+        // Visual feedback
+        canvas.style.opacity = '0.7';
+        setTimeout(() => {
+            canvas.style.opacity = '1';
+        }, 150);
+        
         const y = e.clientY - rect.top;
-        const percentage = y / canvas.height;
-        const scrollTop = percentage * (codeContainer.scrollHeight - codeContainer.clientHeight);
-        codeContainer.scrollTop = Math.max(0, scrollTop);
+        const clickPercentage = Math.max(0, Math.min(1, y / rect.height));
+        
+        console.log('Click details:', { 
+            clientY: e.clientY, 
+            rectTop: rect.top, 
+            y: y, 
+            rectHeight: rect.height, 
+            percentage: clickPercentage 
+        });
+        
+        // Get current scroll info from the actual scrolling element
+        const scrollHeight = scrollElement.scrollHeight;
+        const clientHeight = scrollElement.clientHeight;
+        const maxScrollTop = Math.max(0, scrollHeight - clientHeight);
+        
+        console.log('Scroll info:', { scrollHeight, clientHeight, maxScrollTop });
+        
+        if (maxScrollTop > 0) {
+            const targetScrollTop = clickPercentage * maxScrollTop;
+            const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+            
+            console.log('Setting scrollTop to:', finalScrollTop);
+            
+            // Apply scroll to the correct element
+            scrollElement.scrollTop = finalScrollTop;
+            
+            // Force update
+            setTimeout(() => updateViewport(), 10);
+            
+            console.log('Scroll applied to:', scrollElement.scrollTop);
+        } else {
+            console.log('No scrolling needed - content fits in view');
+        }
     }
     
     // Remove existing listeners to prevent duplicates
-    codeContainer.removeEventListener('scroll', updateViewport);
-    canvas.removeEventListener('click', handleMinimapClick);
+    const existingScrollHandler = scrollElement._minimapScrollHandler;
+    const existingClickHandler = canvas._minimapClickHandler;
     
-    // Add event listeners
-    codeContainer.addEventListener('scroll', updateViewport);
+    if (existingScrollHandler) {
+        scrollElement.removeEventListener('scroll', existingScrollHandler);
+    }
+    if (existingClickHandler) {
+        canvas.removeEventListener('click', existingClickHandler);
+    }
+    
+    // Store handlers for cleanup
+    scrollElement._minimapScrollHandler = updateViewport;
+    canvas._minimapClickHandler = handleMinimapClick;
+    
+    // Add event listeners to the correct scroll element
+    scrollElement.addEventListener('scroll', updateViewport);
     canvas.addEventListener('click', handleMinimapClick);
+    
+    // Also add click handler to minimap container as fallback
+    const minimapContainer = tabContent.querySelector('.minimap-container');
+    if (minimapContainer) {
+        minimapContainer.addEventListener('click', handleMinimapClick);
+    }
     
     // Initial viewport update
     updateViewport();
