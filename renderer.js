@@ -165,6 +165,21 @@ ipcRenderer.on('open-initial-directory', openInitialDirectory);
 ipcRenderer.on('show-shortcuts', showKeyboardShortcuts);
 ipcRenderer.on('show-about', showAbout);
 
+// Handle window resize to regenerate minimaps
+window.addEventListener('resize', () => {
+    // Debounce resize events
+    clearTimeout(window.resizeTimeout);
+    window.resizeTimeout = setTimeout(() => {
+        // Regenerate minimap for active tab
+        if (activeTabId !== null) {
+            const activeTab = tabs.find(tab => tab.id === activeTabId);
+            if (activeTab && !activeTab.isDirectory && !activeTab.isImage) {
+                generateMinimap(activeTabId);
+            }
+        }
+    }, 150);
+});
+
 function createTab(fileData) {
     const tabId = ++tabCounter;
     const existingTab = tabs.find(tab => tab.filePath === fileData.filePath);
@@ -272,9 +287,12 @@ function createTabContent(tab) {
             setTimeout(() => {
                 // Ensure container dimensions are available
                 requestAnimationFrame(() => {
-                    generateMinimap(tab.id);
+                    // Wait for layout to complete
+                    setTimeout(() => {
+                        generateMinimap(tab.id);
+                    }, 10);
                 });
-            }, 50);
+            }, 100);
         }
     }
 }
@@ -532,12 +550,13 @@ function generateMinimap(tabId) {
     const codeContainer = tabContent.querySelector('.code-container');
     const codeBlock = tabContent.querySelector('.code-block');
     
-    // Set canvas size - make sure container has proper dimensions
-    const containerHeight = codeContainer.clientHeight || codeContainer.scrollHeight || 400;
+    // Set canvas size - use the actual minimap container dimensions
+    const minimapContainer = tabContent.querySelector('.minimap-container');
+    const containerRect = minimapContainer.getBoundingClientRect();
     const minimapWidth = 120;
-    const minimapHeight = Math.min(600, containerHeight);
+    const minimapHeight = containerRect.height || codeContainer.clientHeight || 400;
     
-    // Set canvas dimensions
+    // Set canvas dimensions to fill the minimap container
     canvas.width = minimapWidth;
     canvas.height = minimapHeight;
     canvas.style.width = minimapWidth + 'px';
