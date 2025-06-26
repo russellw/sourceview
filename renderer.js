@@ -622,11 +622,6 @@ function setupMinimapScrollSync(tabId) {
         const minimapContainer = tabContent.querySelector('.minimap-container');
         const rect = minimapContainer.getBoundingClientRect();
         
-        // Visual feedback
-        canvas.style.opacity = '0.7';
-        setTimeout(() => {
-            canvas.style.opacity = '1';
-        }, 150);
         
         // Calculate click position relative to minimap container
         const y = e.clientY - rect.top;
