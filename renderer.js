@@ -611,8 +611,6 @@ function setupMinimapScrollSync(tabId) {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('Minimap clicked!', e.target); // Debug log
-        
         // Get the clicked element's bounds (canvas or container)
         let targetElement = canvas;
         let rect = canvas.getBoundingClientRect();
@@ -632,36 +630,20 @@ function setupMinimapScrollSync(tabId) {
         const y = e.clientY - rect.top;
         const clickPercentage = Math.max(0, Math.min(1, y / rect.height));
         
-        console.log('Click details:', { 
-            clientY: e.clientY, 
-            rectTop: rect.top, 
-            y: y, 
-            rectHeight: rect.height, 
-            percentage: clickPercentage 
-        });
-        
         // Get current scroll info from the actual scrolling element
         const scrollHeight = scrollElement.scrollHeight;
         const clientHeight = scrollElement.clientHeight;
         const maxScrollTop = Math.max(0, scrollHeight - clientHeight);
         
-        console.log('Scroll info:', { scrollHeight, clientHeight, maxScrollTop });
-        
         if (maxScrollTop > 0) {
             const targetScrollTop = clickPercentage * maxScrollTop;
             const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
-            
-            console.log('Setting scrollTop to:', finalScrollTop);
             
             // Apply scroll to the correct element
             scrollElement.scrollTop = finalScrollTop;
             
             // Force update
             setTimeout(() => updateViewport(), 10);
-            
-            console.log('Scroll applied to:', scrollElement.scrollTop);
-        } else {
-            console.log('No scrolling needed - content fits in view');
         }
     }
     
