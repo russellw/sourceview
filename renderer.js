@@ -570,24 +570,22 @@ function generateMinimap(tabId) {
     // Get text content and split into lines
     const text = codeElement.textContent || '';
     const lines = text.split('\n');
-    const lineHeight = 1; // Very small line height for minimap
     const charWidth = 0.6; // Very small character width
     
     // Clear canvas
     ctx.fillStyle = '#1e1e1e';
     ctx.fillRect(0, 0, minimapWidth, minimapHeight);
     
-    // Calculate scale
-    const totalContentHeight = lines.length * lineHeight;
-    const scale = minimapHeight / Math.max(totalContentHeight, minimapHeight);
+    // Calculate proper scaling to fit all lines in the minimap height
+    const totalLines = lines.length;
+    const lineHeight = totalLines > 0 ? minimapHeight / totalLines : 1;
     
     // Draw simplified representation of code
     ctx.font = '1px monospace';
     ctx.fillStyle = '#d4d4d4';
     
     lines.forEach((line, index) => {
-        const y = index * lineHeight * scale;
-        if (y > minimapHeight) return;
+        const y = index * lineHeight;
         
         // Draw a simple representation - just colored blocks for non-empty lines
         if (line.trim().length > 0) {
@@ -604,7 +602,9 @@ function generateMinimap(tabId) {
                 ctx.fillStyle = '#d4d4d4'; // Default text
             }
             
-            ctx.fillRect(2, y, lineWidth, Math.max(1, lineHeight * scale));
+            // Draw the line with proper height, minimum 1 pixel
+            const drawHeight = Math.max(0.5, lineHeight);
+            ctx.fillRect(2, y, lineWidth, drawHeight);
         }
     });
     
