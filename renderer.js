@@ -56,15 +56,20 @@ function openInitialDirectory(event, directoryPath) {
     try {
         const files = fs.readdirSync(directoryPath).map(fileName => {
             const fullPath = require('path').join(directoryPath, fileName);
-            const fileStats = fs.statSync(fullPath);
-            return {
-                name: fileName,
-                path: fullPath,
-                isDirectory: fileStats.isDirectory(),
-                size: fileStats.size,
-                modified: fileStats.mtime
-            };
-        });
+            try {
+                const fileStats = fs.statSync(fullPath);
+                return {
+                    name: fileName,
+                    path: fullPath,
+                    isDirectory: fileStats.isDirectory(),
+                    size: fileStats.size,
+                    modified: fileStats.mtime
+                };
+            } catch (error) {
+                // Skip files that can't be accessed due to permissions
+                return null;
+            }
+        }).filter(file => file !== null);
         
         const directoryData = {
             success: true,
@@ -357,15 +362,20 @@ function navigateToDirectory(tabId, directoryPath) {
     try {
         const files = fs.readdirSync(directoryPath).map(fileName => {
             const fullPath = require('path').join(directoryPath, fileName);
-            const fileStats = fs.statSync(fullPath);
-            return {
-                name: fileName,
-                path: fullPath,
-                isDirectory: fileStats.isDirectory(),
-                size: fileStats.size,
-                modified: fileStats.mtime
-            };
-        });
+            try {
+                const fileStats = fs.statSync(fullPath);
+                return {
+                    name: fileName,
+                    path: fullPath,
+                    isDirectory: fileStats.isDirectory(),
+                    size: fileStats.size,
+                    modified: fileStats.mtime
+                };
+            } catch (error) {
+                // Skip files that can't be accessed due to permissions
+                return null;
+            }
+        }).filter(file => file !== null);
         
         // Update the tab data
         const tab = tabs.find(t => t.id === tabId);
@@ -427,15 +437,20 @@ function openDirectoryInNewTab(directoryPath) {
     try {
         const files = fs.readdirSync(directoryPath).map(fileName => {
             const fullPath = require('path').join(directoryPath, fileName);
-            const fileStats = fs.statSync(fullPath);
-            return {
-                name: fileName,
-                path: fullPath,
-                isDirectory: fileStats.isDirectory(),
-                size: fileStats.size,
-                modified: fileStats.mtime
-            };
-        });
+            try {
+                const fileStats = fs.statSync(fullPath);
+                return {
+                    name: fileName,
+                    path: fullPath,
+                    isDirectory: fileStats.isDirectory(),
+                    size: fileStats.size,
+                    modified: fileStats.mtime
+                };
+            } catch (error) {
+                // Skip files that can't be accessed due to permissions
+                return null;
+            }
+        }).filter(file => file !== null);
         
         const directoryData = {
             success: true,

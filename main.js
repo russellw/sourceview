@@ -187,15 +187,20 @@ ipcMain.handle('open-file-dialog', async () => {
         // Handle directory
         const files = fs.readdirSync(selectedPath).map(fileName => {
           const fullPath = path.join(selectedPath, fileName);
-          const fileStats = fs.statSync(fullPath);
-          return {
-            name: fileName,
-            path: fullPath,
-            isDirectory: fileStats.isDirectory(),
-            size: fileStats.size,
-            modified: fileStats.mtime
-          };
-        });
+          try {
+            const fileStats = fs.statSync(fullPath);
+            return {
+              name: fileName,
+              path: fullPath,
+              isDirectory: fileStats.isDirectory(),
+              size: fileStats.size,
+              modified: fileStats.mtime
+            };
+          } catch (error) {
+            // Skip files that can't be accessed due to permissions
+            return null;
+          }
+        }).filter(file => file !== null);
         
         return {
           success: true,
