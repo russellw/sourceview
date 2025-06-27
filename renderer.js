@@ -412,6 +412,11 @@ function navigateToDirectory(tabId, directoryPath) {
                 }
             }
             
+            // Update main title bar if this is the active tab
+            if (activeTabId === tabId) {
+                updateTitleBar();
+            }
+            
             // Update tab content
             const tabContent = tabsContainer.querySelector(`[data-tab-id="${tabId}"]`);
             if (tabContent) {
@@ -510,6 +515,21 @@ function updateUpButtonVisibility() {
     }
 }
 
+function updateTitleBar() {
+    const titleElement = document.querySelector('.title-bar-title');
+    if (!titleElement) return;
+    
+    if (activeTabId !== null) {
+        const activeTab = tabs.find(t => t.id === activeTabId);
+        if (activeTab) {
+            const path = activeTab.isDirectory ? activeTab.directoryPath : activeTab.filePath;
+            titleElement.textContent = path;
+        }
+    } else {
+        titleElement.textContent = 'SourceView';
+    }
+}
+
 function switchToTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
@@ -532,6 +552,7 @@ function switchToTab(tabId) {
     }
     
     activeTabId = tabId;
+    updateTitleBar();
     updateUpButtonVisibility();
     updateToolbarInfo();
 }
@@ -778,6 +799,7 @@ function closeTab(tabId) {
         } else {
             activeTabId = null;
             tabBar.style.display = 'none';
+            updateTitleBar();
             updateUpButtonVisibility();
             updateToolbarInfo();
         }
