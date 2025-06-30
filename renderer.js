@@ -10,6 +10,7 @@ const tabsContainer = document.getElementById('tabsContainer');
 let tabs = [];
 let activeTabId = null;
 let tabCounter = 0;
+let fileWatchers = new Map(); // Store file system watchers for tabs
 
 async function openFile() {
     try {
@@ -295,6 +296,9 @@ function createTabContent(tab) {
             }, 100);
         }
     }
+    
+    // Set up file system watcher for automatic refresh
+    setupFileWatcher(tab);
 }
 
 function createDirectoryTabContent(tab) {
@@ -355,6 +359,9 @@ function createDirectoryTabContent(tab) {
             navigateToDirectory(tab.id, directoryPath);
         });
     });
+    
+    // Set up file system watcher for automatic refresh
+    setupDirectoryWatcher(tab);
 }
 
 async function openFileFromPath(filePath) {
@@ -784,6 +791,9 @@ function closeTab(tabId) {
     const tabIndex = tabs.findIndex(tab => tab.id === tabId);
     if (tabIndex === -1) return;
     
+    // Clean up file watchers for this tab
+    cleanupWatcher(tabId);
+    
     tabs.splice(tabIndex, 1);
     
     const tabElement = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
@@ -1151,4 +1161,183 @@ function showModal(title, content) {
             document.removeEventListener('keydown', escapeHandler);
         }
     });
+}
+
+// Directory and file refresh functionality
+function refreshTab(tabId) {
+    const tab = tabs.find(t => t.id === tabId);
+    if (!tab) {
+        return;
+    }
+    
+    if (tab.isDirectory) {
+        refreshDirectoryTab(tabId);
+    } else {
+        refreshFileTab(tabId);
+    }
+}
+
+function refreshDirectoryTab(tabId) {
+    const tab = tabs.find(t => t.id === tabId);
+    if (!tab || !tab.isDirectory) {
+        return;
+    }
+    
+    try {
+        // Re-read directory contents
+        const files = fs.readdirSync(tab.directoryPath).map(fileName => {
+            const fullPath = require('path').join(tab.directoryPath, fileName);
+            try {
+                const fileStats = fs.statSync(fullPath);
+                return {
+                    name: fileName,
+                    path: fullPath,
+                    isDirectory: fileStats.isDirectory(),
+                    size: fileStats.size,
+                    modified: fileStats.mtime
+                };
+            } catch (error) {
+                // Skip files that can't be accessed due to permissions
+                return null;
+            }
+        }).filter(file => file !== null);
+        
+        // Update tab data
+        tab.files = files;
+        
+        // Update tab content
+        const tabContent = tabsContainer.querySelector(`[data-tab-id="${tabId}"]`);
+        if (tabContent) {
+            tabContent.remove();
+            createDirectoryTabContent(tab);
+            
+            // Make sure the tab is still active
+            if (activeTabId === tabId) {
+                const newTabContent = tabsContainer.querySelector(`[data-tab-id="${tabId}"]`);
+                if (newTabContent) {
+                    newTabContent.classList.remove('hidden');
+                }
+            }
+        }
+        
+        // Update toolbar info if this is the active tab
+        if (activeTabId === tabId) {
+            updateToolbarInfo();
+        }
+        
+    } catch (error) {
+        console.error('Error refreshing directory:', error);
+        // Optionally show user notification
+    }
+}
+
+function setupDirectoryWatcher(tab) {
+    if (!tab.isDirectory) {
+        return;
+    }
+    
+    // Clean up existing watcher if any
+    if (fileWatchers.has(tab.id)) {
+        fileWatchers.get(tab.id).close();
+        fileWatchers.delete(tab.id);
+    }
+    
+    try {
+        // Set up file system watcher
+        const watcher = fs.watch(tab.directoryPath, { recursive: false }, (eventType, filename) => {
+            // Debounce rapid changes
+            clearTimeout(watcher.debounceTimer);
+            watcher.debounceTimer = setTimeout(() => {
+                refreshDirectoryTab(tab.id);
+            }, 100);  // 100ms debounce
+        });
+        
+        fileWatchers.set(tab.id, watcher);
+        
+        // Handle watcher errors
+        watcher.on('error', (error) => {
+            console.error('File watcher error:', error);
+            fileWatchers.delete(tab.id);
+        });
+        
+    } catch (error) {
+        console.error('Error setting up directory watcher:', error);
+        // Watcher setup failed, but continue without it
+    }
+}
+
+function refreshFileTab(tabId) {
+    const tab = tabs.find(t => t.id === tabId);
+    if (!tab || tab.isDirectory) {
+        return;
+    }
+    
+    try {
+        // Re-read file contents
+        const content = fs.readFileSync(tab.filePath, 'utf-8');
+        const stats = fs.statSync(tab.filePath);
+        
+        // Update tab data
+        tab.content = content;
+        tab.lastModified = stats.mtime;
+        
+        // Update tab content
+        const tabContent = tabsContainer.querySelector(`[data-tab-id="${tabId}"]`);
+        if (tabContent) {
+            tabContent.remove();
+            createTabContent(tab);
+            
+            // Make sure the tab is still active
+            if (activeTabId === tabId) {
+                const newTabContent = tabsContainer.querySelector(`[data-tab-id="${tabId}"]`);
+                if (newTabContent) {
+                    newTabContent.classList.remove('hidden');
+                }
+            }
+        }
+        
+        // Update toolbar info if this is the active tab
+        if (activeTabId === tabId) {
+            updateToolbarInfo();
+        }
+        
+    } catch (error) {
+        console.error('Error refreshing file:', error);
+        // Optionally show user notification
+    }
+}
+
+function setupFileWatcher(tab) {
+    if (tab.isDirectory) {
+        return;
+    }
+    
+    // Clean up existing watcher if any
+    if (fileWatchers.has(tab.id)) {
+        fileWatchers.get(tab.id).close();
+        fileWatchers.delete(tab.id);
+    }
+    
+    try {
+        // Set up file system watcher
+        const watcher = fs.watchFile(tab.filePath, { interval: 1000 }, (curr, prev) => {
+            // Check if file was actually modified
+            if (curr.mtime > prev.mtime) {
+                refreshFileTab(tab.id);
+            }
+        });
+        
+        fileWatchers.set(tab.id, { close: () => fs.unwatchFile(tab.filePath) });
+        
+    } catch (error) {
+        console.error('Error setting up file watcher:', error);
+        // Watcher setup failed, but continue without it
+    }
+}
+
+function cleanupWatcher(tabId) {
+    if (fileWatchers.has(tabId)) {
+        fileWatchers.get(tabId).close();
+        fileWatchers.delete(tabId);
+    }
 }
