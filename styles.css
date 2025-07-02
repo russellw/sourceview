@@ -416,6 +416,11 @@ body {
     color: #d4d4d4 !important;
 }
 
+/* Disable italic styling for underscore emphasis in markdown */
+.hljs-emphasis {
+    font-style: normal !important;
+}
+
 pre {
     margin: 0;
     padding: 0;
